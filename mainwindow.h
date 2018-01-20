@@ -37,9 +37,10 @@ private slots:
 
     void on_action_triggered();
 
+    void on_tabWidget_tabBarClicked(int index);
+
 private:
     void connectdb();
-    void VisibleWiget();
     void saveAsCSV();
     QString SearchOverlapAdd(QString TableName, QString Column, QString Data);
     QString selectedRow();

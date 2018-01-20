@@ -33,8 +33,14 @@ MainWindow::MainWindow(QWidget *parent) :
     validator = new QRegExpValidator(regExp5, this);
     ui->lineEdit_6->setValidator(validator);
 
-    ui->pushButton_3->setVisible(false);
-    VisibleWiget();
+    ui->tabWidget->setCurrentIndex(0);
+    //QTabWidget* tab=new QTabWidget;
+    //QTabBar* tabBar;
+    //tabBar=qFindChild<QTabBar*>(tab);
+    //tabBar->hide();
+
+    //ui->tabWidget->tabBar()->setStyleSheet(
+    //        "QTabBar::tab:disabled { width: 0; height: 0; right: 1px; }" //  ??? border-style: none; margin-left: 1px;);
 }
 
 void MainWindow::connectdb() //подкл бд и отрисовка табл. данных в табл.
@@ -45,10 +51,10 @@ void MainWindow::connectdb() //подкл бд и отрисовка табл. �
         db = QSqlDatabase::database();
     } else {
         db = QSqlDatabase::addDatabase("QSQLITE");
-        db.setDatabaseName("GBDDBaseTest.db");
+        db.setDatabaseName("GBDDBase.db");//"D:/Devlop/Projects/bd/GBDDBaseTest.db");
     }
     if (!db.open()) {
-        qDebug() << "Что-то пошло не так!";
+        qDebug() << "Что-то с открытием бд пошло не так!";
         QMessageBox::warning(this, "Внимание","Не удалось открыть БД!");
     }
 
@@ -62,13 +68,13 @@ void MainWindow::connectdb() //подкл бд и отрисовка табл. �
 
         //Заголовки столбцов
         QStringList horizontalHeader;
-        horizontalHeader.append("Номер квитанции");
-        horizontalHeader.append("CarBrand");
-        horizontalHeader.append("CarNumber");
-        horizontalHeader.append("People");
-        horizontalHeader.append("ViolationType");
-        horizontalHeader.append("Payment");
-        horizontalHeader.append("DateViolation");
+        horizontalHeader.append("№ Квитанции");
+        horizontalHeader.append("Бренд авто");
+        horizontalHeader.append("№ Авто");
+        horizontalHeader.append("Нарушитель");
+        horizontalHeader.append("Нарушение");
+        horizontalHeader.append("Сумма штрафа");
+        horizontalHeader.append("Дата нарушения");
 
         model->setHorizontalHeaderLabels(horizontalHeader);
 
@@ -107,52 +113,6 @@ void MainWindow::connectdb() //подкл бд и отрисовка табл. �
         ui->tableView->resizeColumnsToContents();
     }
 
-}
-
-void MainWindow::VisibleWiget() //прячет или показывает виджет
-{
-    if (ui->tableView->isVisible())
-    {
-        ui->tableView->setVisible(false);
-        ui->lineEdit->setVisible(true);
-        ui->lineEdit_1->setVisible(true);
-        ui->lineEdit_2->setVisible(true);
-        ui->lineEdit_3->setVisible(true);
-        ui->lineEdit_4->setVisible(true);
-        ui->lineEdit_5->setVisible(true);
-        ui->lineEdit_6->setVisible(true);
-        ui->label->setVisible(true);
-        ui->label_1->setVisible(true);
-        ui->label_2->setVisible(true);
-        ui->label_3->setVisible(true);
-        ui->label_4->setVisible(true);
-        ui->label_5->setVisible(true);
-        ui->label_6->setVisible(true);
-        ui->label_8->setVisible(true);
-        ui->dateEdit->setVisible(true);
-        ui->pushButton_3->setVisible(true);
-        ui->action_1->setVisible(false);
-    }else{
-        ui->tableView->setVisible(true);
-        ui->lineEdit->setVisible(false);
-        ui->lineEdit_1->setVisible(false);
-        ui->lineEdit_2->setVisible(false);
-        ui->lineEdit_3->setVisible(false);
-        ui->lineEdit_4->setVisible(false);
-        ui->lineEdit_5->setVisible(false);
-        ui->lineEdit_6->setVisible(false);
-        ui->label->setVisible(false);
-        ui->label_1->setVisible(false);
-        ui->label_2->setVisible(false);
-        ui->label_3->setVisible(false);
-        ui->label_4->setVisible(false);
-        ui->label_5->setVisible(false);
-        ui->label_6->setVisible(false);
-        ui->label_8->setVisible(false);
-        ui->dateEdit->setVisible(false);
-        ui->pushButton_3->setVisible(false);
-        ui->action_1->setVisible(true);
-    }
 }
 
 void MainWindow::saveAsCSV() //сохраняет файл в указанную директорию
@@ -225,10 +185,10 @@ QString MainWindow::SearchOverlapAdd (QString TableName, QString Column, QString
 void MainWindow::Edit() //Редактирование
 {
     QSqlQuery query;
-    if (ui->tableView->isVisible()){EdataID = selectedRow();}
+    if (ui->tabWidget->currentIndex() == 0){EdataID = selectedRow();}
     qDebug() << EdataID <<"-ID \n\r";
 
-    if (ui->tableView->isVisible() && EdataID != "") //отображение данных в edit
+    if ((ui->tabWidget->currentIndex() == 0) && (EdataID != "")) //отображение данных в edit
     {
         //запрос
         query.exec("SELECT Data.ID, People.FullName, CarNumber.Number, CarBrand.Brand, Violation.Type , Data.Payment, Data.DateViolation FROM CarNumber, Data, People, CarBrand, Violation WHERE Data.ID ="+EdataID+" and CarNumber.ID = Data.CarNumber_ID and People.ID = Data.People_ID and CarBrand.ID = Data.CarBrand_ID and Violation.ID = Data.Violation_ID");
@@ -251,7 +211,7 @@ void MainWindow::Edit() //Редактирование
         ui->dateEdit->setDate(Date);
 
     }
-    if (!ui->tableView->isVisible())//обновление данных
+    if ((ui->tabWidget->currentIndex() == 1) && (EdataID != ""))//обновление данных
     {
         QString Payment, People_ID, CarNumber_ID, CarBrand_ID, Violation_ID, DateViolation;
         //ФИО
@@ -277,8 +237,10 @@ void MainWindow::Edit() //Редактирование
             QSqlQuery query;
             query.exec("UPDATE Data SET Payment = "+Payment+", People_ID = "+People_ID+", CarNumber_ID = "+CarNumber_ID+", CarBrand_ID = "+CarBrand_ID+", Violation_ID = "+Violation_ID+", DateViolation = '"+DateViolation+"' WHERE ID = "+EdataID);
             qDebug() << "Редактирование успешно! "<<" UPDATE Data SET "+Payment+", "+People_ID+", "+CarNumber_ID+", "+CarBrand_ID+", "+Violation_ID+", "+DateViolation+"' WHERE ID = "+EdataID;
+            //QMessageBox::warning(this, "Внимание","Редактирование успешно!");
+            connectdb();
         }else{
-            QMessageBox::warning(this, "Внимание","Добавить не удалось!!!");
+            //QMessageBox::warning(this, "Внимание","Редактирование не успешно!");
             qDebug() << "Редактирование не успешно! "<<" UPDATE Data SET "+Payment+", "+People_ID+", "+CarNumber_ID+", "+CarBrand_ID+", "+Violation_ID+", "+DateViolation+"' WHERE ID = "+EdataID;
         }
         CarNumber_ID = "";
@@ -293,16 +255,12 @@ void MainWindow::Edit() //Редактирование
         ui->lineEdit_5->setText("");
         Payment = "";
         ui->lineEdit_6->setText("");
-        EdataID = "";//почистим
-
-        QMessageBox::warning(this, "Внимание","Редактирование успешно!");
+        EdataID = "";//почистим   
     }
-    if(ui->pushButton->isVisible()){
-        ui->pushButton->setVisible(false);
-    }else{ui->pushButton->setVisible(true);}
-    if(ui->pushButton_2->isVisible()){
-        ui->pushButton_2->setVisible(false);
-    }else{ui->pushButton_2->setVisible(true);}
+
+    //изменение текущего tab
+    if (ui->tabWidget->currentIndex() == 1){ui->tabWidget->setCurrentIndex(0);}
+    else if (ui->tabWidget->currentIndex() == 0 && EdataID != ""){ui->tabWidget->setCurrentIndex(1);}
 }
 
 MainWindow::~MainWindow()
@@ -312,7 +270,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked() //добавление
 {
-    if (!ui->tableView->isVisible())
+    if (ui->tabWidget->currentIndex() == 1)
     {
         QString Payment, People_ID, CarNumber_ID, CarBrand_ID, Violation_ID, DateViolation;
         //ФИО
@@ -353,20 +311,16 @@ void MainWindow::on_pushButton_clicked() //добавление
         ui->lineEdit_5->setText("");
         Payment = "";
         ui->lineEdit_6->setText("");
+        ui->tabWidget->setCurrentIndex(0);
+        connectdb();
     }
-    if(ui->pushButton_1->isVisible()){
-        ui->pushButton_1->setVisible(false);
-    }else{ui->pushButton_1->setVisible(true);}
-    if(ui->pushButton_2->isVisible()){
-        ui->pushButton_2->setVisible(false);
-    }else{ui->pushButton_2->setVisible(true);}
-    VisibleWiget();
-    connectdb();
+    else{ui->tabWidget->setCurrentIndex(1);}
 }
 
 void MainWindow::on_pushButton_2_clicked() //удаление выделенной строки
 {
-
+    if (ui->tabWidget->currentIndex() == 0)
+    {
     //тут происходит магия поимки id из выделенной строки
     int row = ui->tableView->currentIndex().row();
     QString dataIDtable = ui->tableView->model()->data(ui->tableView->model()->index(row, 0)).toString();
@@ -379,6 +333,7 @@ void MainWindow::on_pushButton_2_clicked() //удаление выделенно
         ui->tableView->setRowHidden(row, true);                 //убираем строку которую удалили
         qDebug() <<  row << dataIDtable <<"Убрано \n\r";
     }else{QMessageBox::warning(this, "Внимание","Ничего не выделено!");}
+    }
 }
 
 void MainWindow::on_action_1_triggered() //Выгрузка
@@ -388,19 +343,19 @@ void MainWindow::on_action_1_triggered() //Выгрузка
 
 void MainWindow::on_pushButton_1_clicked() //Редактирование
 {
-    if(selectedRow() == "" && ui->tableView->isVisible())
+    if((selectedRow() == "") && (ui->tabWidget->currentIndex() == 0))
     {
         QMessageBox::warning(this, "Внимание","Ничего не выделено!");
     }else{
         Edit();
-        VisibleWiget();
-        connectdb();
-
+        //VisibleWiget(); 
     }
 }
 
 void MainWindow::on_pushButton_3_clicked() //Отмена
 {
+    if (ui->tabWidget->currentIndex() == 1)
+    {
     ui->lineEdit->setText("");
     ui->lineEdit_1->setText("");
     ui->lineEdit_2->setText("");
@@ -408,15 +363,17 @@ void MainWindow::on_pushButton_3_clicked() //Отмена
     ui->lineEdit_4->setText("");
     ui->lineEdit_5->setText("");
     ui->lineEdit_6->setText("");
-    ui->pushButton->setVisible(true);
-    ui->pushButton_1->setVisible(true);
-    ui->pushButton_2->setVisible(true);
-    ui->pushButton_3->setVisible(false);
-    VisibleWiget();
+    ui->tabWidget->setCurrentIndex(0);
+    }
 }
 
 void MainWindow::on_action_triggered()
 {
     db.close();
     close();
+}
+
+void MainWindow::on_tabWidget_tabBarClicked(int index)
+{
+     qDebug() <<  index;//ui->tabWidget->currentIndex();
 }
