@@ -34,13 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_6->setValidator(validator);
 
     ui->tabWidget->setCurrentIndex(0);
-    //QTabWidget* tab=new QTabWidget;
-    //QTabBar* tabBar;
-    //tabBar=qFindChild<QTabBar*>(tab);
-    //tabBar->hide();
 
-    //ui->tabWidget->tabBar()->setStyleSheet(
-    //        "QTabBar::tab:disabled { width: 0; height: 0; right: 1px; }" //  ??? border-style: none; margin-left: 1px;);
 }
 
 void MainWindow::connectdb() //подкл бд и отрисовка табл. данных в табл.
@@ -51,7 +45,7 @@ void MainWindow::connectdb() //подкл бд и отрисовка табл. �
         db = QSqlDatabase::database();
     } else {
         db = QSqlDatabase::addDatabase("QSQLITE");
-        db.setDatabaseName("GBDDBase.db");//"D:/Devlop/Projects/bd/GBDDBaseTest.db");
+        db.setDatabaseName("GBDDBase.db");
     }
     if (!db.open()) {
         qDebug() << "Что-то с открытием бд пошло не так!";
@@ -348,7 +342,6 @@ void MainWindow::on_pushButton_1_clicked() //Редактирование
         QMessageBox::warning(this, "Внимание","Ничего не выделено!");
     }else{
         Edit();
-        //VisibleWiget(); 
     }
 }
 
@@ -373,7 +366,3 @@ void MainWindow::on_action_triggered()
     close();
 }
 
-void MainWindow::on_tabWidget_tabBarClicked(int index)
-{
-     qDebug() <<  index;//ui->tabWidget->currentIndex();
-}
